@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+# =====================================================================================
+# ENV DEV
+# =====================================================================================
+
+  api-dev:
+    container_name: nest-api-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: npm run start:dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    depends_on:
+      - db-dev
+    profiles: ["dev"]
+
+  db-dev:
+    image: postgres:16
+    container_name: nest-db-dev
+    environment:
+      POSTGRES_DB: nest_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    profiles: ["dev"]
+
+
+# =====================================================================================
+# ENV PROD
+# =====================================================================================
+
+  api-prod:
+    container_name: nest-api-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - db-prod
+    restart: unless-stopped
+    profiles: ["prod"]
+
+  db-prod:
+    image: postgres:16
+    container_name: nest-db-prod
+    environment:
+      POSTGRES_DB: nest_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata-prod:/var/lib/postgresql/data
+    restart: unless-stopped
+    profiles: ["prod"]
+
+volumes:
+  pgdata-dev:
+  pgdata-prod:

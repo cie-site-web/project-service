@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ProjectTable {
+  id              String   @id @default(uuid())
+  public_id       String   @unique
+  title           String
+  description     String
+  github_url      String
+  address_url     String
+  is_public       Boolean
+
+  technologies_id String
+  technologies    TechnologyTable @relation(fields: [technologies_id], references: [id])
+
+  project_tags    ProjectTagTable[]
+  screenshots     ScreenshotTable[]
+  utils_gestions  UtilsGestionTable[]
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+}
+
+model TechnologyTable {
+  id                 String   @id @default(uuid())
+  public_id          String   @unique
+
+  architecture_id    String
+  architecture       ArchitectureTable @relation(fields: [architecture_id], references: [id])
+
+  framework_id       String
+  framework          FrameworkTable @relation(fields: [framework_id], references: [id])
+
+  utils_gestion_id   String
+  utils_gestion      UtilsGestionTable @relation(fields: [utils_gestion_id], references: [id])
+
+  projects           ProjectTable[]
+
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+}
+
+model TagTable {
+  id          String   @id @default(uuid())
+  public_id   String   @unique
+  name        String
+  description String
+
+  project_tags ProjectTagTable[]
+
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model ProjectTagTable {
+  id          String   @id @default(uuid())
+  public_id   String   @unique
+
+  project_id  String
+  project     ProjectTable @relation(fields: [project_id], references: [id])
+
+  tags_id     String
+  tags        TagTable @relation(fields: [tags_id], references: [id])
+
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@unique([project_id, tags_id])
+}
+
+model FrameworkTable {
+  id                      String   @id @default(uuid())
+  public_id               String   @unique
+  programming_langage_id  String
+  programming_langage     ProgrammingLangageTable @relation(fields: [programming_langage_id], references: [id])
+  name                    String
+  progress                Int
+  technologies            TechnologyTable[]
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+}
+
+model ProgrammingLangageTable {
+  id          String   @id @default(uuid())
+  public_id   String   @unique
+  name        String
+  frameworks  FrameworkTable[]
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model ArchitectureTable {
+  id          String   @id @default(uuid())
+  public_id   String   @unique
+  logique     String
+  physique    String
+  technologies TechnologyTable[]
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model UtilsGestionTable {
+  id            String   @id @default(uuid())
+  public_id     String   @unique
+
+  project_id    String
+  project       ProjectTable @relation(fields: [project_id], references: [id])
+
+  versioning    String
+  container     String
+  orchestrateur String
+
+  technologies  TechnologyTable[]
+
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
+model ScreenshotTable {
+  id          String   @id @default(uuid())
+  public_id   String   @unique
+  project_id  String
+  project     ProjectTable @relation(fields: [project_id], references: [id])
+  image_url   String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}

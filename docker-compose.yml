@@ -1,34 +1,33 @@
-version: "3.9"
-
 services:
 # =====================================================================================
 # ENV DEV
 # =====================================================================================
 
-  api-dev:
-    container_name: nest-api-dev
+  project-service-dev:
+    image: project-service-dev
+    container_name: project-service-dev
     build:
       context: .
       dockerfile: Dockerfile.dev
-    command: npm run start:dev
+    command: sh -c "npx prisma migrate deploy && npx prisma generate && npm run start:dev"
     ports:
       - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@project-db-dev:5432/project-db
     env_file:
-      - .env
+      - ./src/infrastructure/config/.env.dev
     depends_on:
-      - db-dev
+      - project-db-dev
     profiles: ["dev"]
 
-  db-dev:
+  project-db-dev:
     image: postgres:16
-    container_name: nest-db-dev
-    environment:
-      POSTGRES_DB: nest_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+    container_name: project-db-dev
+    env_file:
+      - ./src/infrastructure/config/.env.dev
     ports:
       - "5433:5432"
     volumes:
@@ -40,27 +39,26 @@ services:
 # ENV PROD
 # =====================================================================================
 
-  api-prod:
-    container_name: nest-api-prod
+  project-service-prod:
+    container_name: project-service-prod
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+      - "5555:5555"
     env_file:
-      - .env
+      - ./src/infrastructure/config/.env.prod
     depends_on:
-      - db-prod
+      - project-db-prod
     restart: unless-stopped
     profiles: ["prod"]
 
-  db-prod:
+  project-db-prod:
     image: postgres:16
-    container_name: nest-db-prod
-    environment:
-      POSTGRES_DB: nest_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+    container_name: project-db-prod
+    env_file:
+      - ./src/infrastructure/config/.env.prod
     volumes:
       - pgdata-prod:/var/lib/postgresql/data
     restart: unless-stopped

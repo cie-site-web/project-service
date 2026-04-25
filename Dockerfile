@@ -6,6 +6,7 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+COPY src/infrastructure/config/.env.dev .env
 RUN npm run build
 
 
